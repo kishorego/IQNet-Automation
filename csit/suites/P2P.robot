@@ -15,6 +15,7 @@ Library           Collections
 Library           String
 Library           OperatingSystem
 Library           ${CURDIR}/../libraries/Commands.py
+Library           ${CURDIR}/../libraries/BasicTraffic.py
 Resource          ../libraries/Resource.robot
 Resource          ../libraries/Resource.robot
 
@@ -38,6 +39,12 @@ EPL_PTP_NCS-NCS_SubIntf
     #configure service Policy map on sub-intf in ingress
     CONFIGURE SERVICE-POLICY-MAP-INTF    ${R1_net_connect}    ${PORT_R1_10}.${sub_interface_4095}    ${Ser_Pol_map_intf_template}    ${Ser_Pol_map_1G_data}
     CONFIGURE SERVICE-POLICY-MAP-INTF    ${R2_net_connect}    ${PORT_R2_10}.${sub_interface_4095}    ${Ser_Pol_map_intf_template}    ${Ser_Pol_map_1G_data}
+
+    #start spirent traffic
+    ${spirent_traffic}=    spi
+    log to console  ${spirent_traffic}
+    SLEEP  5
+
     #verify status of main intf status R1
     ${template_data}=    Create Dictionary    interface=${PORT_R1_10}
     ${show_result}=    SHOW COMMAND    ${R1_net_connect}    show_interface_template    ${template_data}
