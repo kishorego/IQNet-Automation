@@ -4,6 +4,7 @@
 ##############################################################
 from __future__ import print_function
 import sth
+import time
 
 
 def spi():
@@ -589,7 +590,8 @@ def spi():
 
 	traffic_ctrl_ret = sth.traffic_control (
 			port_handle                                      = [port_handle[0],port_handle[1]],
-			action                                           = 'run');
+			action                                           = 'run',
+			duration                                         = '60');
 
 	status = traffic_ctrl_ret['status']
 	if (status == '0') :
@@ -603,6 +605,7 @@ def spi():
 	#start to get the device results
 	##############################################################
 
+	time.sleep(30)
 
 	##############################################################
 	#start to get the traffic results
