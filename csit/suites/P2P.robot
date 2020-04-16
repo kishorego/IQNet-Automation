@@ -45,6 +45,10 @@ EPL_PTP_NCS-NCS_SubIntf
     log to console  ${spirent_traffic}
     SLEEP  5
 
+    ${spirent_traffic}=    spi2
+    log to console  ${spirent_traffic}
+    SLEEP  5
+
     #verify status of main intf status R1
     ${template_data}=    Create Dictionary    interface=${PORT_R1_10}
     ${show_result}=    SHOW COMMAND    ${R1_net_connect}    show_interface_template    ${template_data}
