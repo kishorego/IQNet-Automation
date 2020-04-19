@@ -41,13 +41,14 @@ EPL_PTP_NCS-NCS_SubIntf
     CONFIGURE SERVICE-POLICY-MAP-INTF    ${R2_net_connect}    ${PORT_R2_10}.${sub_interface_4095}    ${Ser_Pol_map_intf_template}    ${Ser_Pol_map_1G_data}
 
     #start spirent traffic
-    ${spirent_traffic}=    spi
+    ${spirent_traffic}=    spi1
     log to console  ${spirent_traffic}
-    SLEEP  5
-
+    run keyword and continue on failure    should not contain    ${spirent_traffic}    fail
+    SLEEP  20
     ${spirent_traffic}=    spi2
     log to console  ${spirent_traffic}
-    SLEEP  5
+    run keyword and continue on failure    should not contain    ${spirent_traffic}    fail
+    SLEEP  10
 
     #verify status of main intf status R1
     ${template_data}=    Create Dictionary    interface=${PORT_R1_10}
