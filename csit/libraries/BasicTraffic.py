@@ -18,7 +18,7 @@ from pprint import pprint
 # file_path =  os.path.dirname(os.path.basename(__file__))
 file_path = os.path.dirname(os.path.realpath(__file__))
 def spirent_items():
-    data = yaml.load(open('Spirent_Test_Topology.yaml'), Loader=yaml.Loader)
+    data = yaml.load(open('/var/lib/jenkins/workspace/IQNet-L2/csit/libraries/Spirent_Test_Topology.yaml'), Loader=yaml.Loader)
 
     # with open( file_path + '\..\libraries\Spirent_Test_Topology.yaml') as data_file:
     #     data = yaml.load(data_file,Loader=yaml.FullLoader)
