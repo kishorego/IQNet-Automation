@@ -15,39 +15,57 @@ Setup Actions
     ${Topo_data}    Get Data
     #log to console    ${Topo_data}
     ${DEV_DICT}    get from dictionary    ${Topo_data}    Device_Details    #get all device details
-    ${LINK_DICT}    get from dictionary    ${Topo_data}    Link_Details     #get all link details
+    ${PORT_DICT}    get from dictionary    ${Topo_data}    Port_Details     #get all port details
 
-    #NCS R1 & R2 details
-    ${Link_R1_R2}    get from dictionary    ${LINK_DICT}    Link_R1_R2  #get NCS_R1/R2 link dictionary
-    ${PORT_R1_10}    get from dictionary    ${Link_R1_R2}    R1      #get NCS_R1 link
-    ${PORT_R2_10}    get from dictionary    ${Link_R1_R2}    R2      #get NCS_R2 link
-    Builtin.Set_Suite_Variable    ${PORT_R1_10}                        #global variable
-    Builtin.Set_Suite_Variable    ${PORT_R2_10}                        #global variable
-    ${R1_DICT}    get from dictionary    ${DEV_DICT}    NCS_R1              #NCS_R1 dictionary
-    ${R1_net_connect}    Make Connection    ${R1_DICT}                      #ssh to NCS_R1
-    Builtin.Set_Suite_Variable    ${R1_net_connect}
+    ## Details for NCS devices ##
+
+    ## NCS_R1 ##
+    ${NCS_R1_DICT}    get from dictionary    ${DEV_DICT}    NCS_R1    #NCS_R1 dictionary
+    ${NCS_R1_net_connect}    Make Connection    ${NCS_R1_DICT}    #ssh to NCS_R1
+    Builtin.Set_Suite_Variable    ${NCS_R1_net_connect}
     Log To Console    Connection Establihed to NCS_R1
-    ${R2_DICT}    get from dictionary    ${DEV_DICT}    NCS_R2              #NCS_R2 dictionary
-    ${R2_net_connect}    Make Connection    ${R2_DICT}                      #ssh to NCS_R2
-    Builtin.Set_Suite_Variable    ${R2_net_connect}
-    Log To Console    Connection Establihed to NCS_R2
+    # Port Details
+    ${PORT_NCS_R1}    get from dictionary    ${PORT_DICT}    NCS_R1    #get NCS_R1 link dictionary
+    ${NCS_R1_P1}    get from dictionary    ${PORT_NCS_R1}    P1    #get NCS_R1_P1 link
+    ${NCS_R1_P2}    get from dictionary    ${PORT_NCS_R1}    P2    #get NCS_R1_P2 link
+    Builtin.Set_Suite_Variable    ${NCS_R1_P1}    #global variable
+    Builtin.Set_Suite_Variable    ${NCS_R1_P2}    #global variable
 
-    #LTS R3 & R4 details
-#    ${Link_R3}    get from dictionary    ${LINK_DICT}    Link_R3             #get R3 link dictionary
-#    ${PORT_R3_1}    get from dictionary    ${Link_R3}    R3_1
-#    ${PORT_R3_5}    get from dictionary    ${Link_R3}    R3_5
-#    Builtin.Set_Suite_Variable    ${PORT_R3_1}                        #global variable
-#    Builtin.Set_Suite_Variable    ${PORT_R3_5}                        #global variable
-#    ${R3_DICT}    get from dictionary    ${DEV_DICT}    LTS_R3              #LTS_R3 dictionary
-#    ${R3_net_connect}    Make Connection Accedian    ${R3_DICT}                      #ssh to LTS_R3
-#    Builtin.Set_Suite_Variable    ${R3_net_connect}
-#    Log To Console    Connection Establihed to LTS_R3
+    ## NCS_R2 ##
+    ${NCS_R2_DICT}    get from dictionary    ${DEV_DICT}    NCS_R2    #NCS_R2 dictionary
+    ${NCS_R2_net_connect}    Make Connection    ${NCS_R2_DICT}    #ssh to NCS_R2
+    Builtin.Set_Suite_Variable    ${NCS_R2_net_connect}
+    Log To Console    Connection Establihed to NCS_R2
+    # Port Details
+    ${PORT_NCS_R2}    get from dictionary    ${PORT_DICT}    NCS_R2    #get NCS_R2 link dictionary
+    ${NCS_R2_P1}    get from dictionary    ${PORT_NCS_R2}    P1    #get NCS_R2_P1 link
+    ${NCS_R2_P2}    get from dictionary    ${PORT_NCS_R2}    P2    #get NCS_R2_P2 link
+    Builtin.Set_Suite_Variable    ${NCS_R2_P1}    #global variable
+    Builtin.Set_Suite_Variable    ${NCS_R2_P2}    #global variable
+
+
+#    ## Details for Accedian devices ##
+#
+#    ## ACC_R1 ##
+#    ${ACC_R1_DICT}    get from dictionary    ${DEV_DICT}    ACC_R1    #ACC_R1 dictionary
+#    ${ACC_R1_net_connect}    Make Connection Accedian    ${ACC_R1_DICT}    #ssh to ACC_R1
+#    Builtin.Set_Suite_Variable    ${ACC_R1_net_connect}
+#    Log To Console    Connection Establihed to ACC_R1
+#    # Port Details
+#    ${PORT_ACC_R1}    get from dictionary    ${PORT_DICT}    ACC_R1    #get NCS_R4 link dictionary
+#    ${ACC_R1_P1}    get from dictionary    ${PORT_ACC_R1}    P1    #get ACC_R1_P1 link
+#    ${ACC_R1_P2}    get from dictionary    ${PORT_ACC_R1}    P2    #get ACC_R1_P2 link
+#    Builtin.Set_Suite_Variable    ${ACC_R1_P1}    #global variable
+#    Builtin.Set_Suite_Variable    ${ACC_R1_P2}    #global variable
 
 Teardown Actions
     Log To Console    Teardown Actions done here
-    Close Connection    ${R1_net_connect}
-    Close Connection    ${R2_net_connect}
-#    Close Connection    ${R3_net_connect}
+
+    Close Connection    ${NCS_R1_net_connect}
+	Close Connection    ${NCS_R2_net_connect}
+
+#    Close Connection    ${ACC_R1_net_connect}
+
 
 CONFIGURE POLICY-MAP-EGR
     [Arguments]    ${connect_id}    ${template_name}    ${template_data}

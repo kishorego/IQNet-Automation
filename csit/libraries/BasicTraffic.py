@@ -17,6 +17,7 @@ from pprint import pprint
 # print file_path
 # file_path =  os.path.dirname(os.path.basename(__file__))
 file_path = os.path.dirname(os.path.realpath(__file__))
+
 def spirent_items():
     data = yaml.load(open('/var/lib/jenkins/workspace/IQNet-L2/csit/libraries/Spirent_Test_Topology.yaml'), Loader=yaml.Loader)
 
@@ -148,8 +149,7 @@ def spi2():
     return result
 
 
-
-def spi1():
+def L2_Traffic():
 
     ##############################################################
     #config the parameters for the logging
@@ -157,12 +157,12 @@ def spi1():
 
     test_sta = sth.test_config (
             log                                              = '1',
-            logfile                                          = 'BasciTraffic_logfile',
-            vendorlogfile                                    = 'BasciTraffic_stcExport',
+            logfile                                          = 'L2Service_logfile',
+            vendorlogfile                                    = 'L2Service_stcExport',
             vendorlog                                        = '1',
             hltlog                                           = '1',
-            hltlogfile                                       = 'BasciTraffic_hltExport',
-            hlt2stcmappingfile                               = 'BasciTraffic_hlt2StcMapping',
+            hltlogfile                                       = 'L2Service_hltExport',
+            hlt2stcmappingfile                               = 'L2Service_hlt2StcMapping',
             hlt2stcmapping                                   = '1',
             log_level                                        = '7');
 
@@ -195,7 +195,7 @@ def spi1():
 
     i = 0
     device = "10.91.113.124"
-    port_list = ['8/5','8/6']
+    port_list = ['11/10','11/6']
     port_handle = []
     intStatus = sth.connect (
             device                                           = device,
@@ -226,8 +226,8 @@ def spi1():
             intf_mode                                        = 'ethernet',
             phy_mode                                         = 'fiber',
             scheduling_mode                                  = 'RATE_BASED',
-            port_loadunit                                    = 'FRAMES_PER_SECOND',
-            port_load                                        = '1000',
+            port_loadunit                                    = 'PERCENT_LINE_RATE',
+            port_load                                        = '10',
             enable_ping_response                             = '0',
             control_plane_mtu                                = '1500',
             flow_control                                     = 'false',
@@ -249,8 +249,8 @@ def spi1():
             intf_mode                                        = 'ethernet',
             phy_mode                                         = 'fiber',
             scheduling_mode                                  = 'RATE_BASED',
-            port_loadunit                                    = 'FRAMES_PER_SECOND',
-            port_load                                        = '1000',
+            port_loadunit                                    = 'PERCENT_LINE_RATE',
+            port_load                                        = '10',
             enable_ping_response                             = '0',
             control_plane_mtu                                = '1500',
             flow_control                                     = 'false',
@@ -270,29 +270,22 @@ def spi1():
     #create device and config the protocol on it
     ##############################################################
 
-    #start to create the device: ar1-100
+    #start to create the device: Device 1
     device_ret0 = sth.emulation_device_config (
             mode                                             = 'create',
             ip_version                                       = 'ipv4',
-            encapsulation                                    = 'ethernet_ii_vlan',
-            port_handle                                      = port_handle[0],
-            vlan_user_pri                                    = '7',
-            vlan_cfi                                         = '0',
-            vlan_id                                          = '100',
-            vlan_tpid                                        = '33024',
-            vlan_id_repeat_count                             = '0',
-            vlan_id_step                                     = '0',
-            router_id                                        = '192.0.0.3',
+            encapsulation                                    = 'ethernet_ii',
+            port_handle                                      = port_handle[1],
+            router_id                                        = '192.0.0.1',
             count                                            = '1',
             enable_ping_response                             = '1',
-            mac_addr                                         = '00:10:94:00:00:03',
+            mac_addr                                         = '00:10:94:00:00:01',
             mac_addr_step                                    = '00:00:00:00:00:01',
-            intf_ip_addr                                     = '172.16.146.0',
-            intf_prefix_len                                  = '31',
+            intf_ip_addr                                     = '192.168.71.1',
+            intf_prefix_len                                  = '24',
             resolve_gateway_mac                              = 'true',
-            gateway_ip_addr                                  = '172.16.146.1',
+            gateway_ip_addr                                  = '192.168.71.2',
             gateway_ip_addr_step                             = '0.0.0.0',
-            gateway_mac                                      = '00:a7:42:16:5f:23',
             intf_ip_addr_step                                = '0.0.0.1');
 
     status = device_ret0['status']
@@ -302,29 +295,22 @@ def spi1():
     else:
         print("***** run sth.emulation_device_config successfully")
 
-    #start to create the device: ar6-100
+    #start to create the device: Device 2
     device_ret1 = sth.emulation_device_config (
             mode                                             = 'create',
             ip_version                                       = 'ipv4',
-            encapsulation                                    = 'ethernet_ii_vlan',
-            port_handle                                      = port_handle[1],
-            vlan_user_pri                                    = '7',
-            vlan_cfi                                         = '0',
-            vlan_id                                          = '100',
-            vlan_tpid                                        = '33024',
-            vlan_id_repeat_count                             = '0',
-            vlan_id_step                                     = '0',
-            router_id                                        = '192.0.0.4',
+            encapsulation                                    = 'ethernet_ii',
+            port_handle                                      = port_handle[0],
+            router_id                                        = '192.0.0.2',
             count                                            = '1',
             enable_ping_response                             = '1',
-            mac_addr                                         = '00:10:94:00:00:04',
+            mac_addr                                         = '00:10:94:00:00:02',
             mac_addr_step                                    = '00:00:00:00:00:01',
-            intf_ip_addr                                     = '172.17.146.0',
-            intf_prefix_len                                  = '31',
+            intf_ip_addr                                     = '192.168.71.2',
+            intf_prefix_len                                  = '24',
             resolve_gateway_mac                              = 'true',
-            gateway_ip_addr                                  = '172.17.146.1',
+            gateway_ip_addr                                  = '192.168.71.1',
             gateway_ip_addr_step                             = '0.0.0.0',
-            gateway_mac                                      = '00:a7:42:36:12:8f',
             intf_ip_addr_step                                = '0.0.0.1');
 
     status = device_ret1['status']
@@ -334,302 +320,14 @@ def spi1():
     else:
         print("***** run sth.emulation_device_config successfully")
 
-    #start to create the device: ar1-101
-    device_ret2 = sth.emulation_device_config (
-            mode                                             = 'create',
-            ip_version                                       = 'ipv4',
-            encapsulation                                    = 'ethernet_ii_vlan',
-            port_handle                                      = port_handle[0],
-            vlan_user_pri                                    = '7',
-            vlan_cfi                                         = '0',
-            vlan_id                                          = '101',
-            vlan_tpid                                        = '33024',
-            vlan_id_repeat_count                             = '0',
-            vlan_id_step                                     = '0',
-            router_id                                        = '192.0.0.5',
-            count                                            = '1',
-            enable_ping_response                             = '1',
-            mac_addr                                         = '00:10:94:00:00:05',
-            mac_addr_step                                    = '00:00:00:00:00:01',
-            intf_ip_addr                                     = '172.18.146.0',
-            intf_prefix_len                                  = '31',
-            resolve_gateway_mac                              = 'true',
-            gateway_ip_addr                                  = '172.18.146.1',
-            gateway_ip_addr_step                             = '0.0.0.0',
-            gateway_mac                                      = '00:a7:42:16:5f:23',
-            intf_ip_addr_step                                = '0.0.0.1');
-
-    status = device_ret2['status']
-    if (status == '0') :
-        print("run sth.emulation_device_config failed")
-        print(device_ret2)
-    else:
-        print("***** run sth.emulation_device_config successfully")
-
-    #start to create the device: ar1-111 L2
-    device_ret3 = sth.emulation_device_config (
-            mode                                             = 'create',
-            ip_version                                       = 'ipv4',
-            encapsulation                                    = 'ethernet_ii_vlan',
-            port_handle                                      = port_handle[0],
-            vlan_user_pri                                    = '5',
-            vlan_cfi                                         = '0',
-            vlan_id                                          = '111',
-            vlan_tpid                                        = '33024',
-            vlan_id_repeat_count                             = '0',
-            vlan_id_step                                     = '0',
-            router_id                                        = '192.0.0.6',
-            count                                            = '1',
-            enable_ping_response                             = '1',
-            mac_addr                                         = '00:11:11:00:00:01',
-            mac_addr_step                                    = '00:00:00:00:00:01',
-            intf_ip_addr                                     = '192.168.111.10',
-            intf_prefix_len                                  = '24',
-            resolve_gateway_mac                              = 'true',
-            gateway_ip_addr                                  = '192.168.111.2',
-            gateway_ip_addr_step                             = '0.0.0.0',
-            gateway_mac                                      = '00:10:94:00:00:07',
-            intf_ip_addr_step                                = '0.0.0.1');
-
-    status = device_ret3['status']
-    if (status == '0') :
-        print("run sth.emulation_device_config failed")
-        print(device_ret3)
-    else:
-        print("***** run sth.emulation_device_config successfully")
-
-    #start to create the device: ar6-111 L2
-    device_ret4 = sth.emulation_device_config (
-            mode                                             = 'create',
-            ip_version                                       = 'ipv4',
-            encapsulation                                    = 'ethernet_ii_vlan',
-            port_handle                                      = port_handle[1],
-            vlan_user_pri                                    = '5',
-            vlan_cfi                                         = '0',
-            vlan_id                                          = '111',
-            vlan_tpid                                        = '33024',
-            vlan_id_repeat_count                             = '0',
-            vlan_id_step                                     = '0',
-            router_id                                        = '192.0.0.7',
-            count                                            = '1',
-            enable_ping_response                             = '1',
-            mac_addr                                         = '00:10:94:00:00:07',
-            mac_addr_step                                    = '00:00:00:00:00:01',
-            intf_ip_addr                                     = '192.168.111.2',
-            intf_prefix_len                                  = '24',
-            resolve_gateway_mac                              = 'true',
-            gateway_ip_addr                                  = '192.168.111.10',
-            gateway_ip_addr_step                             = '0.0.0.0',
-            gateway_mac                                      = '00:11:11:00:00:01',
-            intf_ip_addr_step                                = '0.0.0.1');
-
-    status = device_ret4['status']
-    if (status == '0') :
-        print("run sth.emulation_device_config failed")
-        print(device_ret4)
-    else:
-        print("***** run sth.emulation_device_config successfully")
-
-    #start to create the device: ar1-110 L2
-    device_ret5 = sth.emulation_device_config (
-            mode                                             = 'create',
-            ip_version                                       = 'ipv4',
-            encapsulation                                    = 'ethernet_ii_vlan',
-            port_handle                                      = port_handle[0],
-            vlan_user_pri                                    = '3',
-            vlan_cfi                                         = '0',
-            vlan_id                                          = '110',
-            vlan_tpid                                        = '33024',
-            vlan_id_repeat_count                             = '0',
-            vlan_id_step                                     = '0',
-            router_id                                        = '192.0.0.6',
-            count                                            = '1',
-            enable_ping_response                             = '1',
-            mac_addr                                         = '00:10:94:00:00:06',
-            mac_addr_step                                    = '00:00:00:00:00:01',
-            intf_ip_addr                                     = '110.168.110.111',
-            intf_prefix_len                                  = '24',
-            resolve_gateway_mac                              = 'true',
-            gateway_ip_addr                                  = '110.168.110.112',
-            gateway_ip_addr_step                             = '0.0.0.0',
-            gateway_mac                                      = '00:10:94:00:00:07',
-            intf_ip_addr_step                                = '0.0.0.1');
-
-    status = device_ret5['status']
-    if (status == '0') :
-        print("run sth.emulation_device_config failed")
-        print(device_ret5)
-    else:
-        print("***** run sth.emulation_device_config successfully")
-
-    #start to create the device: ar6-110 L2
-    device_ret6 = sth.emulation_device_config (
-            mode                                             = 'create',
-            ip_version                                       = 'ipv4',
-            encapsulation                                    = 'ethernet_ii_vlan',
-            port_handle                                      = port_handle[1],
-            vlan_user_pri                                    = '3',
-            vlan_cfi                                         = '0',
-            vlan_id                                          = '110',
-            vlan_tpid                                        = '33024',
-            vlan_id_repeat_count                             = '0',
-            vlan_id_step                                     = '0',
-            router_id                                        = '192.0.0.7',
-            count                                            = '1',
-            enable_ping_response                             = '1',
-            mac_addr                                         = '00:10:94:00:00:07',
-            mac_addr_step                                    = '00:00:00:00:00:01',
-            intf_ip_addr                                     = '110.168.110.112',
-            intf_prefix_len                                  = '24',
-            resolve_gateway_mac                              = 'true',
-            gateway_ip_addr                                  = '110.168.110.111',
-            gateway_ip_addr_step                             = '0.0.0.0',
-            gateway_mac                                      = '00:10:94:00:00:06',
-            intf_ip_addr_step                                = '0.0.0.1');
-
-    status = device_ret6['status']
-    if (status == '0') :
-        print("run sth.emulation_device_config failed")
-        print(device_ret6)
-    else:
-        print("***** run sth.emulation_device_config successfully")
-
-    #start to create the device: ar6-112 L2
-    device_ret7 = sth.emulation_device_config (
-            mode                                             = 'create',
-            ip_version                                       = 'ipv4',
-            encapsulation                                    = 'ethernet_ii_vlan',
-            port_handle                                      = port_handle[1],
-            vlan_user_pri                                    = '3',
-            vlan_cfi                                         = '0',
-            vlan_id                                          = '112',
-            vlan_tpid                                        = '33024',
-            vlan_id_repeat_count                             = '0',
-            vlan_id_step                                     = '0',
-            router_id                                        = '192.0.0.7',
-            count                                            = '1',
-            enable_ping_response                             = '1',
-            mac_addr                                         = '00:10:94:00:00:07',
-            mac_addr_step                                    = '00:00:00:00:00:01',
-            intf_ip_addr                                     = '112.112.12.1',
-            intf_prefix_len                                  = '24',
-            resolve_gateway_mac                              = 'true',
-            gateway_ip_addr                                  = '112.112.12.2',
-            gateway_ip_addr_step                             = '0.0.0.0',
-            gateway_mac                                      = '00:12:94:00:00:06',
-            intf_ip_addr_step                                = '0.0.0.1');
-
-    status = device_ret7['status']
-    if (status == '0') :
-        print("run sth.emulation_device_config failed")
-        print(device_ret7)
-    else:
-        print("***** run sth.emulation_device_config successfully")
-
-    #start to create the device: ar1-112 L2
-    device_ret8 = sth.emulation_device_config (
-            mode                                             = 'create',
-            ip_version                                       = 'ipv4',
-            encapsulation                                    = 'ethernet_ii_vlan',
-            port_handle                                      = port_handle[0],
-            vlan_user_pri                                    = '3',
-            vlan_cfi                                         = '0',
-            vlan_id                                          = '112',
-            vlan_tpid                                        = '33024',
-            vlan_id_repeat_count                             = '0',
-            vlan_id_step                                     = '0',
-            router_id                                        = '192.0.0.6',
-            count                                            = '1',
-            enable_ping_response                             = '1',
-            mac_addr                                         = '00:12:94:00:00:06',
-            mac_addr_step                                    = '00:00:00:00:00:01',
-            intf_ip_addr                                     = '112.112.12.2',
-            intf_prefix_len                                  = '24',
-            resolve_gateway_mac                              = 'true',
-            gateway_ip_addr                                  = '112.112.12.1',
-            gateway_ip_addr_step                             = '0.0.0.0',
-            gateway_mac                                      = '00:10:94:00:00:07',
-            intf_ip_addr_step                                = '0.0.0.1');
-
-    status = device_ret8['status']
-    if (status == '0') :
-        print("run sth.emulation_device_config failed")
-        print(device_ret8)
-    else:
-        print("***** run sth.emulation_device_config successfully")
-
-    #start to create the device: ar1-113 L2
-    device_ret9 = sth.emulation_device_config (
-            mode                                             = 'create',
-            ip_version                                       = 'ipv4',
-            encapsulation                                    = 'ethernet_ii_vlan',
-            port_handle                                      = port_handle[0],
-            vlan_user_pri                                    = '3',
-            vlan_cfi                                         = '0',
-            vlan_id                                          = '113',
-            vlan_tpid                                        = '33024',
-            vlan_id_repeat_count                             = '0',
-            vlan_id_step                                     = '0',
-            router_id                                        = '192.0.0.6',
-            count                                            = '1',
-            enable_ping_response                             = '1',
-            mac_addr                                         = '00:12:94:00:00:06',
-            mac_addr_step                                    = '00:00:00:00:00:01',
-            intf_ip_addr                                     = '13.113.13.2',
-            intf_prefix_len                                  = '24',
-            resolve_gateway_mac                              = 'true',
-            gateway_ip_addr                                  = '13.113.13.1',
-            gateway_ip_addr_step                             = '0.0.0.0',
-            gateway_mac                                      = '00:10:94:00:00:07',
-            intf_ip_addr_step                                = '0.0.0.1');
-
-    status = device_ret9['status']
-    if (status == '0') :
-        print("run sth.emulation_device_config failed")
-        print(device_ret9)
-    else:
-        print("***** run sth.emulation_device_config successfully")
-
-    #start to create the device: ar6-113 L2
-    device_ret10 = sth.emulation_device_config (
-            mode                                             = 'create',
-            ip_version                                       = 'ipv4',
-            encapsulation                                    = 'ethernet_ii_vlan',
-            port_handle                                      = port_handle[1],
-            vlan_user_pri                                    = '3',
-            vlan_cfi                                         = '0',
-            vlan_id                                          = '113',
-            vlan_tpid                                        = '33024',
-            vlan_id_repeat_count                             = '0',
-            vlan_id_step                                     = '0',
-            router_id                                        = '192.0.0.7',
-            count                                            = '1',
-            enable_ping_response                             = '1',
-            mac_addr                                         = '00:10:94:00:00:07',
-            mac_addr_step                                    = '00:00:00:00:00:01',
-            intf_ip_addr                                     = '13.113.13.1',
-            intf_prefix_len                                  = '24',
-            resolve_gateway_mac                              = 'true',
-            gateway_ip_addr                                  = '13.113.13.2',
-            gateway_ip_addr_step                             = '0.0.0.0',
-            gateway_mac                                      = '00:12:94:00:00:06',
-            intf_ip_addr_step                                = '0.0.0.1');
-
-    status = device_ret10['status']
-    if (status == '0') :
-        print("run sth.emulation_device_config failed")
-        print(device_ret10)
-    else:
-        print("***** run sth.emulation_device_config successfully")
-
 
     ##############################################################
     #create traffic
     ##############################################################
 
-    src_hdl = device_ret0['handle'].split()[0]
+    src_hdl = device_ret1['handle'].split()[0]
 
-    dst_hdl = device_ret1['handle'].split()[0]
+    dst_hdl = device_ret0['handle'].split()[0]
 
 
     streamblock_ret1 = sth.traffic_config (
@@ -643,10 +341,12 @@ def spi1():
             ip_hdr_length                                    = '5',
             ip_protocol                                      = '253',
             ip_fragment_offset                               = '0',
-            ip_dscp                                          = '10',
+            ip_mbz                                           = '0',
+            ip_precedence                                    = '6',
+            ip_tos_field                                     = '0',
             enable_control_plane                             = '0',
             l3_length                                        = '1500',
-            name                                             = 'ar1-100_B3',
+            name                                             = 'StreamBlock_1-3',
             fill_type                                        = 'constant',
             fcs_error                                        = '0',
             fill_value                                       = '0',
@@ -654,17 +354,15 @@ def spi1():
             traffic_state                                    = '1',
             high_speed_result_analysis                       = '1',
             length_mode                                      = 'fixed',
-            dest_port_list                                   = ['port2','port1'],
+            dest_port_list                                   = ['port1','port2'],
             tx_port_sending_traffic_to_self_en               = 'false',
             disable_signature                                = '0',
             enable_stream_only_gen                           = '1',
             pkts_per_burst                                   = '1',
             inter_stream_gap_unit                            = 'bytes',
-            burst_loop_count                                 = '30',
-            transmit_mode                                    = 'continuous',
             inter_stream_gap                                 = '12',
-            rate_pps                                         = '1000',
-            mac_discovery_gw                                 = '172.16.146.1');
+            rate_mbps                                        = '100',
+            mac_discovery_gw                                 = '192.168.71.1');
 
     status = streamblock_ret1['status']
     if (status == '0') :
@@ -673,9 +371,9 @@ def spi1():
     else:
         print("***** run sth.traffic_config successfully")
 
-    src_hdl = device_ret1['handle'].split()[0]
+    src_hdl = device_ret0['handle'].split()[0]
 
-    dst_hdl = device_ret0['handle'].split()[0]
+    dst_hdl = device_ret1['handle'].split()[0]
 
 
     streamblock_ret2 = sth.traffic_config (
@@ -689,10 +387,12 @@ def spi1():
             ip_hdr_length                                    = '5',
             ip_protocol                                      = '253',
             ip_fragment_offset                               = '0',
-            ip_dscp                                          = '10',
+            ip_mbz                                           = '0',
+            ip_precedence                                    = '6',
+            ip_tos_field                                     = '0',
             enable_control_plane                             = '0',
             l3_length                                        = '1500',
-            name                                             = 'ar6-100_B3',
+            name                                             = 'StreamBlock_1-4',
             fill_type                                        = 'constant',
             fcs_error                                        = '0',
             fill_value                                       = '0',
@@ -700,17 +400,15 @@ def spi1():
             traffic_state                                    = '1',
             high_speed_result_analysis                       = '1',
             length_mode                                      = 'fixed',
-            dest_port_list                                   = ['port2','port1'],
+            dest_port_list                                   = ['port1','port2'],
             tx_port_sending_traffic_to_self_en               = 'false',
             disable_signature                                = '0',
             enable_stream_only_gen                           = '1',
             pkts_per_burst                                   = '1',
             inter_stream_gap_unit                            = 'bytes',
-            burst_loop_count                                 = '30',
-            transmit_mode                                    = 'continuous',
             inter_stream_gap                                 = '12',
-            rate_pps                                         = '1000',
-            mac_discovery_gw                                 = '172.17.146.1');
+            rate_mbps                                        = '100',
+            mac_discovery_gw                                 = '192.168.71.2');
 
     status = streamblock_ret2['status']
     if (status == '0') :
@@ -726,6 +424,7 @@ def spi1():
     ##############################################################
 
 
+
     ##############################################################
     #start traffic
     ##############################################################
@@ -734,8 +433,6 @@ def spi1():
             port_handle                                      = [port_handle[0],port_handle[1]],
             action                                           = 'run',
             duration                                         = '30');
-
-
 
     status = traffic_ctrl_ret['status']
     if (status == '0') :
@@ -748,7 +445,6 @@ def spi1():
     ##############################################################
     #start to get the device results
     ##############################################################
-
     time.sleep(30)
 
     ##############################################################
@@ -763,12 +459,9 @@ def spi1():
     if (status == '0') :
         print("run sth.traffic_stats failed")
         print(traffic_results_ret)
-
-
     else:
         print("***** run sth.traffic_stats successfully, and results is:")
         print(traffic_results_ret)
-
 
 
     ##############################################################
@@ -791,8 +484,6 @@ def spi1():
 
     result = SpirentResult(traffic_results_ret, port_list)
     return result
-
-
 
 def SpirentResult(traffic_results_ret, port_list):
 
@@ -840,5 +531,6 @@ def SpirentResult(traffic_results_ret, port_list):
     print(OverallStatus)
 
     return OverallStatus
+
 
 

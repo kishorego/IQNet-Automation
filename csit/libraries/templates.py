@@ -2,6 +2,7 @@
 ##    NCS COMMANDS     ##
 #########################
 
+# NCS_int_template= when sub intf need to be configured
 NCS_int_template = '''
 interface {{ component.interface }}
  description {{ component.description }}
@@ -12,12 +13,14 @@ interface {{ component.interface }}
   transmit disable
   no shutdown
  !
+ negotiation auto
  load-interval 30
- loopback internal
+ #loopback internal
 !
 '''
 # loopback internal - only for testing. will be removed in actual test.
 
+# NCS_main_int_template= when main intf need to be configured
 NCS_main_int_template = '''
 interface {{ component.interface }}
  description {{ component.description }}
@@ -27,31 +30,14 @@ interface {{ component.interface }}
   transmit disable
   no shutdown
  !
+ negotiation auto
  load-interval 30
- loopback internal
+ #loopback internal
 !
  l2transport
  service-policy output {{ component.output_policy }} account user-defined {{ component.acc_value }}
 '''
 
-# NCS_int_template = '''
-# interface {{ component.interface }}
-#  description {{ component.description }}
-#  mtu {{ component.mtu }}
-#  service-policy output {{ component.output_policy }} account user-defined {{ component.acc_value }}
-#  lldp
-#   receive disable
-#   transmit disable
-#   no shutdown
-#  !
-#  load-interval 30
-#  loopback internal
-# !
-# {% if l2transport is defined and l2transport == 'YES' %}
-#  l2transport
-#  service-policy output {{ component.output_policy }} account user-defined {{ component.acc_value }}
-#  {% endif %}
-# '''
 
 Del_NCS_int_template = '''
 no interface {{ component.interface }}
@@ -60,13 +46,35 @@ no interface {{ component.interface }}
 # Sub-intf type = P/F/D/X/Y & below possible values should be defined in Variables.py for encapsulation
 # encapsulation type P = default   X = dot1ad/dot1q <Vlan-id>   Y = dot1q/dot1ad <Vlan-Id> second dot1q <Vlan-Id>   D = dot1q/dot1ad <Vlan-Id> second dot1q <Vlan-Id>   F = dot1ad/dot1q <Vlan-Id>
 
+NCS_sub_int_template = """
+interface {{ component.sub_interface }} l2transport
+ description {{ component.description }}
+ {% if component.service_type == 'P' %}
+ encapsulation default
+ {% elif component.service_type == 'F' %}
+ encapsulation {{ component.encapsulation1 }}
+ {% elif component.service_type == 'X' %}
+ encapsulation {{ component.encapsulation1 }} 
+ rewrite ingress tag pop 1 symmetric 
+ {% elif component.service_type == 'Y' %}
+ encapsulation {{ component.encapsulation1 }} second {{ component.encapsulation2 }}
+ rewrite ingress tag pop 1 symmetric 
+ {% elif component.service_type == 'D' %}
+ encapsulation dot1q {{ component.encapsulation1 }} second dot1q {{ component.encapsulation2 }}
+ {% endif %}
+ no shutdown
+"""
+
+# this template was created earlier. now using NCS_sub_int_template.
+# will remove in future if everything works well.
 NCS_sub_int_PFD_template = """
 interface {{ component.sub_interface }} l2transport
  description {{ component.description }}
  encapsulation {{ component.encapsulation }}
  no shutdown
 """
-
+# this template was created earlier. now using NCS_sub_int_template.
+# will remove in future if everything works well.
 NCS_sub_int_XY_template = """
 interface {{ component.sub_interface }} l2transport
  description {{ component.description }}
@@ -74,6 +82,7 @@ interface {{ component.sub_interface }} l2transport
  rewrite ingress tag pop 1 symmetric 
  no shutdown
 """
+
 
 Del_NCS_sub_int_template = """
 no interface {{ component.sub_interface }}

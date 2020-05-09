@@ -11,11 +11,17 @@ import sys
 # print file_path
 # file_path =  os.path.dirname(os.path.basename(__file__))
 file_path = os.path.dirname(os.path.realpath(__file__))
-def get_data():
-    with open(file_path + '/../Topology/P2P_Topology_file.json') as data_file:
-        data = json.load(data_file)
-    return data
 
+# # Topology converted to yml format. So Json not required any more. Will delete it later.
+# def get_data():
+#     with open(file_path + '/../Topology/P2P_Topology_file.json') as data_file:
+#         data = json.load(data_file)
+#     return data
+
+def get_data():
+    with open(file_path + '/../Topology/L2_Topology.yml') as data_file:
+        data = yaml.load(data_file, Loader=yaml.FullLoader)
+    return data
 
 # devices_dict = get_data()
 # devicename = 'R1'

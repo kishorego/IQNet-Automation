@@ -17,16 +17,36 @@ R2_interface_data = {
     'acc_value': '26'
 }
 
-# encapsulation type P = default   X = dot1ad/dot1q <Vlan-id>   Y = dot1q/dot1ad <Vlan-Id> second dot1q <Vlan-Id>   D = dot1q/dot1ad <Vlan-Id> second dot1q <Vlan-Id>   F = dot1ad/dot1q <Vlan-Id>
+
+# # Was in use earlier, when logic for P/F/X/Y/D wasn't developed. Will delete it later.
+# # Now template with logic is developed and P/F/X/Y/D can be created by single template.
+# R1_sub_interface_data = {
+#     'description': 'Ankit - Automation Test Service',
+#     'encapsulation': 'default'
+# }
+#
+#
+# R2_sub_interface_data = {
+#     'description': 'Ankit - Automation Test Service',
+#     'encapsulation': 'default'
+# }
+
+
+
+# service_type P = default   X = dot1ad/dot1q <Vlan-id>   Y = dot1q/dot1ad <Vlan-Id> second dot1q <Vlan-Id>   D = dot1q/dot1ad <Vlan-Id> second dot1q <Vlan-Id>   F = dot1ad/dot1q <Vlan-Id>
+
 R1_sub_interface_data = {
     'description': 'Ankit - Automation Test Service',
-    'encapsulation': 'default'
+    'service_type': 'P',            # P/F/X/Y/D
+    'encapsulation1': 'dot1q 101',  #dot1q or dot1ad <vlan> // populate only for F/X/Y/D
+    'encapsulation2': 'dot1q 102'   #dot1q or dot1ad <vlan> // populate only for Y/D
 }
-
 
 R2_sub_interface_data = {
     'description': 'Ankit - Automation Test Service',
-    'encapsulation': 'default'
+    'service_type': 'P',            # P/F/X/Y/D
+    'encapsulation1': 'dot1q 101',  # 'dot1q or dot1ad <vlan>' // populate only for F/X/Y/D
+    'encapsulation2': 'dot1q 102'   # 'dot1q or dot1ad <vlan>' // populate only for Y/D
 }
 
 Pol_map_egr_data = {
@@ -102,17 +122,20 @@ R2_cfm_data = {
 # LLF config contain no variables. will be applied under intf/sub-intf
 LLF_data = {}
 
-sub_interface_4095 = '4095'
+# When ever new sub-interface is required, it will added here. No logic is developed to create sub-int from vlan (maybe in future we create that logic).
+sub_interface_4095 = '4095'     # For encapsulation default
 sub_interface_100 = '100'
 sub_interface_4097 = '4097'
 
 
+# Data to be verified in NCS will be added here
+
 local_mep_info = "Local MEPs: 1 total: all operational, no errors"
 peer_mep_info = "Peer MEPs: 1 total: all operational, no errors"
 
-intf_status = "up        up"
+intf_status = "up        up"    # 8 spaces
 
-L2VPN_status = """UP        UP        UP"""
+L2VPN_status = """UP        UP        UP"""     # 8 spaces
 
 
 
@@ -123,7 +146,7 @@ L2VPN_status = """UP        UP        UP"""
 ##  ACCEDIAN COMMANDS  ##
 #########################
 
-accedian_port_status = """Enabled        Up"""
+accedian_port_status = """Enabled        Up"""      # 8 spaces
 mep_status = """Ok        False"""
 #mep_status = """Failed        False"""
 
