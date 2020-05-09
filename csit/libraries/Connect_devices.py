@@ -4,6 +4,7 @@ from datetime import datetime
 from netmiko import ConnectHandler
 import time
 import json
+import yaml
 import os
 import sys
 
