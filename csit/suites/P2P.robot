@@ -278,6 +278,12 @@ EPL_PTP_NCS-NCS_MainIntf_LLF
     CONFIGURE LLF    ${NCS_R2_net_connect}    ${NCS_R2_P1}    ${LLF_template}    ${LLF_data}
     #LLF verification needs to be added
 
+    # Send Traffic from Spirent
+    ${spirent_traffic}=    L2_Traffic
+    log to console  ${spirent_traffic}
+    run keyword and continue on failure    should not contain    ${spirent_traffic}    fail
+    SLEEP  10
+
     SLEEP  120
 
     #uncofigure all the paremeters - interface, sub-interface, CFM, evpn & l2vpn,
