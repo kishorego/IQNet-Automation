@@ -278,6 +278,8 @@ EPL_PTP_NCS-NCS_MainIntf_LLF
     CONFIGURE LLF    ${NCS_R2_net_connect}    ${NCS_R2_P1}    ${LLF_template}    ${LLF_data}
     #LLF verification needs to be added
 
+    SLEEP  120
+
     #uncofigure all the paremeters - interface, sub-interface, CFM, evpn & l2vpn,
     UNCONFIGURE INTF    ${NCS_R1_net_connect}    ${NCS_R1_P1}    ${Del_NCS_int_template}    ${R1_interface_data}
     UNCONFIGURE INTF    ${NCS_R2_net_connect}    ${NCS_R2_P1}    ${Del_NCS_int_template}    ${R2_interface_data}
