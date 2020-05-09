@@ -60,6 +60,7 @@ EPL_PTP_NCS-NCS_SubIntf
     ${show_result}=    SHOW COMMAND    ${NCS_R2_net_connect}    show_interface_template    ${template_data}
     log to console    ${show_result}
     run keyword and continue on failure    should contain    ${show_result}    ${intf_status}
+
     #configure EPL & L2VPN on R1 & R2
     CONFIGURE EVPN    ${NCS_R1_net_connect}    ${EVPN_template}    ${R1_evpn_data}
     CONFIGURE L2VPN    ${NCS_R1_net_connect}    ${NCS_R1_P1}.${sub_interface_4095}    ${L2VPN_template}    ${R1_l2vpn_data}
@@ -73,6 +74,7 @@ EPL_PTP_NCS-NCS_SubIntf
     ${show_result}=    SHOW COMMAND    ${NCS_R2_net_connect}    show_L2VPN_template    ${R2_l2vpn_data}
     log to console    ${show_result}
     run keyword and continue on failure    should contain    ${show_result}    ${L2VPN_status}
+
     #configure CFM on R1 & R2
     CONFIGURE CFM    ${NCS_R1_net_connect}    ${CFM_template}    ${R1_cfm_data}
     CONFIGURE CFM    ${NCS_R2_net_connect}    ${CFM_template}    ${R2_cfm_data}
@@ -89,6 +91,7 @@ EPL_PTP_NCS-NCS_SubIntf
     log to console    ${show_result}
     run keyword and continue on failure    should contain    ${show_result}    ${local_mep_info}
     run keyword and continue on failure    should contain    ${show_result}    ${peer_mep_info}
+
     #verify L2VPN status R1 !!!AGAIN!!!
     ${show_result}=    SHOW COMMAND    ${NCS_R1_net_connect}    show_L2VPN_template    ${R1_l2vpn_data}
     log to console    ${show_result}
@@ -97,6 +100,7 @@ EPL_PTP_NCS-NCS_SubIntf
     ${show_result}=    SHOW COMMAND    ${NCS_R2_net_connect}    show_L2VPN_template    ${R2_l2vpn_data}
     log to console    ${show_result}
     run keyword and continue on failure    should contain    ${show_result}    ${L2VPN_status}
+
     #verify the CFM status on R1 & R2 again at the interval of 4 sec !!! to check CFM is not flapping!!!
     ${show_result}=    SHOW COMMAND    ${NCS_R1_net_connect}    show_eth_cfm_template    ${R1_cfm_data}
     log to console    ${show_result}
@@ -187,6 +191,28 @@ EPL_PTP_NCS-NCS_MainIntf
     #verify the CFM status on R1 & R2
     #wait 80 sec for CFM to exchnage msgs & come up
     Sleep   80
+    ${show_result}=    SHOW COMMAND    ${NCS_R1_net_connect}    show_eth_cfm_template    ${R1_cfm_data}
+    log to console    ${show_result}
+    run keyword and continue on failure    should contain    ${show_result}    ${local_mep_info}
+    run keyword and continue on failure    should contain    ${show_result}    ${peer_mep_info}
+    ${show_result}=    SHOW COMMAND    ${NCS_R2_net_connect}    show_eth_cfm_template    ${R2_cfm_data}
+    log to console    ${show_result}
+    run keyword and continue on failure    should contain    ${show_result}    ${local_mep_info}
+    run keyword and continue on failure    should contain    ${show_result}    ${peer_mep_info}
+
+    # Verify L2VPN status again
+    Sleep   10
+    #verify L2VPN status R1
+    ${show_result}=    SHOW COMMAND    ${NCS_R1_net_connect}    show_L2VPN_template    ${R1_l2vpn_data}
+    log to console    ${show_result}
+    run keyword and continue on failure    should contain    ${show_result}    ${L2VPN_status}
+    #verify L2VPN status R2
+    ${show_result}=    SHOW COMMAND    ${NCS_R2_net_connect}    show_L2VPN_template    ${R2_l2vpn_data}
+    log to console    ${show_result}
+    run keyword and continue on failure    should contain    ${show_result}    ${L2VPN_status}
+
+    # Verify CFM status again
+    Sleep   10
     ${show_result}=    SHOW COMMAND    ${NCS_R1_net_connect}    show_eth_cfm_template    ${R1_cfm_data}
     log to console    ${show_result}
     run keyword and continue on failure    should contain    ${show_result}    ${local_mep_info}
