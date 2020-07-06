@@ -1,23 +1,12 @@
-sth_interface_config:
-   mode: 'config'
-   create_host: 'false'
-   intf_mode: 'ethernet'
-   scheduling_mode: 'RATE_BASED'
-   duplex: 'full'
-
-Spirent_Port_Booking:
-   Port1: 11/6
-   Port2: 11/10
-
-Spirent_Test_Infrastructure:
+Spirent_Test_Topology:
+   Spirent_Chassis_ip: '10.91.113.124'
    Number_of_ports: 2
-
-Spirent_stream_config:
-   mode: 'create'
-   l2_encap: 'ethernet_ii'
-   l3_protocol: 'ipv4'
-   ip_id:  '0'
-   frame_size:  2000
-   transmit_mode: 'continuous'
-   rate_percent:  50
-   length_mode:  'fixed'
+   Port_Values:
+      Port1: 11/6
+      Port2: 11/10
+   Port_Speed:
+      Port1_Speed: 'ether1000'
+      Port2_Speed: 'ether1000'
+   Port_Phy_Mode:
+      Port1_Phy_mode: 'fiber'
+      Port2_Phy_mode: 'fiber'

@@ -18,20 +18,17 @@ from pprint import pprint
 # file_path =  os.path.dirname(os.path.basename(__file__))
 file_path = os.path.dirname(os.path.realpath(__file__))
 
-def spirent_items():
-    data = yaml.load(open(file_path + '/../libraries/Spirent_Test_Topology.yaml'), Loader=yaml.Loader)
 
-    # with open( file_path + '\..\libraries\Spirent_Test_Topology.yaml') as data_file:
-    #     data = yaml.load(data_file,Loader=yaml.FullLoader)
-    interface_config = data['sth_interface_config']
-    Booked_ports = data['Spirent_Port_Booking']
-    Stream_config = data['Spirent_stream_config']
-    Spirent_Test_Infra = data['Spirent_Test_Infrastructure']
-    return (Booked_ports, interface_config, Stream_config, Spirent_Test_Infra)
+def Get_Spirent_Config():
+	data = yaml.load(open(file_path + '/../libraries/Spirent_Test_Topology.yaml'), Loader=yaml.Loader)
+
+	# with open( file_path + 'Spirent_Test_Topology.yaml') as data_file:
+	#     data = yaml.load(data_file,Loader=yaml.FullLoader)
+	Spirent_Test_Topology = data['Spirent_Test_Topology']
+	return (Spirent_Test_Topology)
 
 def Spirent_VLAN_Transperancy_Traffic_Testing_For_P2P_Service():
-	Booked_ports, Interface_config, Stream_config, Spirent_Test_Infra = spirent_items()
-	Number_of_ports = Spirent_Test_Infra['Number_of_ports']
+	Spirent_Test_Infrastructure = Get_Spirent_Config()
 
 	##############################################################
 	# Creation of Spirent Test config with log file
@@ -67,153 +64,158 @@ def Spirent_VLAN_Transperancy_Traffic_Testing_For_P2P_Service():
 	# connect to chassis and reserve port list
 	##############################################################
 	i = 0
-	device = "10.91.113.124"
-	port_list = list(Booked_ports.values())
 	port_handle = []
+	device = Spirent_Test_Infrastructure['Spirent_Chassis_ip']
+	port_list = list(Spirent_Test_Infrastructure['Port_Values'].values())
+	port_speed = list(Spirent_Test_Infrastructure['Port_Speed'].values())
+	port_mode = list(Spirent_Test_Infrastructure['Port_Phy_Mode'].values())
 	intStatus = sth.connect(
-		device=device,
-		port_list=port_list,
-		break_locks=1,
-		offline=0)
-
+			device=device,
+			port_list=port_list,
+			break_locks=1,
+			offline=0)
 	status = intStatus['status']
-
 	if (status == '1'):
 		for port in port_list:
 			port_handle.append(intStatus['port_handle'][device][port])
 			i += 1
 	else:
 		print("\nFailed to retrieve port handle!\n")
-	#		print(port_handle)
+	#		print(self.port_handle)
+	print("Printing Port Handle")
 	print(port_handle)
 	##############################################################
-	# Spirent Ports configuration
+	# interface config
 	##############################################################
-	for i in range(len(port_list)):
-		int_ret0 = sth.interface_config(
-			mode='config',
-			port_handle=port_handle[i],
-			create_host='false',
-			intf_mode='ethernet',
-			phy_mode='fiber',
-			scheduling_mode='RATE_BASED',
-			port_loadunit='PERCENT_LINE_RATE',
-			port_load='50',
-			enable_ping_response='0',
-			control_plane_mtu='1500',
-			flow_control='false',
-			speed='ether1000',
-			data_path_mode='normal',
-			autonegotiation='1');
-		status = int_ret0['status']
-		if (status == '0'):
-			print("run sth.interface_config failed")
-	# print(int_ret0)
+
+	int_ret0 = sth.interface_config(
+		mode='config',
+		port_handle=port_handle[0],
+		create_host='false',
+		intf_mode='ethernet',
+		phy_mode='copper',
+		scheduling_mode='PRIORITY_BASED',
+		port_loadunit='PERCENT_LINE_RATE',
+		port_load='10',
+		enable_ping_response='0',
+		control_plane_mtu='1500',
+		speed='ether1000',
+		duplex='full',
+		autonegotiation='1');
+
+	status = int_ret0['status']
+	if (status == '0'):
+		print("run sth.interface_config failed")
+		print(int_ret0)
+	else:
+		print("***** run sth.interface_config successfully")
+
+	int_ret1 = sth.interface_config(
+		mode='config',
+		port_handle=port_handle[1],
+		create_host='false',
+		intf_mode='ethernet',
+		phy_mode='copper',
+		scheduling_mode='PRIORITY_BASED',
+		port_loadunit='PERCENT_LINE_RATE',
+		port_load='10',
+		enable_ping_response='0',
+		control_plane_mtu='1500',
+		speed='ether1000',
+		duplex='full',
+		autonegotiation='1');
+
+	status = int_ret1['status']
+	if (status == '0'):
+		print("run sth.interface_config failed")
+		print(int_ret1)
+	else:
+		print("***** run sth.interface_config successfully")
+
+	##############################################################
+	# create device and config the protocol on it
+	##############################################################
+
+	# start to create the device: Device 1
+	device_ret0 = sth.emulation_device_config(
+		mode='create',
+		ip_version='ipv4',
+		encapsulation='ethernet_ii',
+		port_handle=port_handle[1],
+		router_id='192.0.39.8',
+		count='1',
+		enable_ping_response='0',
+		mac_addr='00:10:94:00:00:13',
+		mac_addr_step='00:00:00:00:00:01',
+		intf_ip_addr='10.0.0.13',
+		intf_prefix_len='24',
+		resolve_gateway_mac='true',
+		gateway_ip_addr='10.0.0.14',
+		gateway_ip_addr_step='0.0.0.0',
+		gateway_mac='00:10:94:00:00:14',
+		intf_ip_addr_step='0.0.0.1');
+
+	status = device_ret0['status']
+	if (status == '0'):
+		print("run sth.emulation_device_config failed")
+		print(device_ret0)
+	else:
+		print("***** run sth.emulation_device_config successfully")
+
+	# start to create the device: Device 2
+	device_ret1 = sth.emulation_device_config(
+		mode='create',
+		ip_version='ipv4',
+		encapsulation='ethernet_ii',
+		port_handle=port_handle[0],
+		router_id='192.0.39.9',
+		count='1',
+		enable_ping_response='0',
+		mac_addr='00:10:94:00:00:14',
+		mac_addr_step='00:00:00:00:00:01',
+		intf_ip_addr='10.0.0.14',
+		intf_prefix_len='24',
+		resolve_gateway_mac='true',
+		gateway_ip_addr='10.0.0.13',
+		gateway_ip_addr_step='0.0.0.0',
+		gateway_mac='00:10:94:00:00:13',
+		intf_ip_addr_step='0.0.0.1');
+
+	status = device_ret1['status']
+	if (status == '0'):
+		print("run sth.emulation_device_config failed")
+		print(device_ret1)
+	else:
+		print("***** run sth.emulation_device_config successfully")
+
 	##############################################################
 	# create traffic
 	##############################################################
-	streamblock_ret1 = sth.traffic_config(
-		mode='create',
-		port_handle=port_handle[0],
-		l2_encap='ethernet_ii_vlan',
-		l3_protocol='ipv4',
-		ip_id='0',
-		ip_src_addr='192.85.1.2',
-		ip_dst_addr='192.0.0.1',
-		ip_ttl='255',
-		ip_hdr_length='5',
-		ip_protocol='253',
-		ip_fragment_offset='0',
-		ip_mbz='0',
-		ip_precedence='0',
-		ip_tos_field='0',
-		vlan_id_repeat='0',
-		vlan_id_mode='increment',
-		vlan_id_count='4095',
-		vlan_id_step='1',
-		mac_src='00:10:94:00:00:02',
-		mac_dst='00:10:94:00:00:01',
-		vlan_cfi='0',
-		vlan_tpid='33024',
-		vlan_id='1',
-		vlan_user_priority='0',
-		enable_control_plane='0',
-		l3_length='4978',
-		name='StreamBlock_11',
-		fill_type='constant',
-		fcs_error='0',
-		fill_value='0',
-		frame_size='1500',
-		traffic_state='1',
-		high_speed_result_analysis='1',
-		length_mode='fixed',
-		dest_port_list=port_handle[1],
-		tx_port_sending_traffic_to_self_en='false',
-		disable_signature='0',
-		enable_stream_only_gen='1',
-		pkts_per_burst='1',
-		inter_stream_gap_unit='bytes',
-		burst_loop_count='6000',
-		transmit_mode='multi_burst',
-		inter_stream_gap='12',
-		rate_mbps='800',
-		mac_discovery_gw='192.85.1.1',
-		enable_stream='false');
-
-	status = streamblock_ret1['status']
-	if (status == '0'):
-		print("run sth.traffic_config failed")
-		print(streamblock_ret1)
-	else:
-		print("***** run sth.traffic_config successfully")
-
 	streamblock_ret2 = sth.traffic_config(
 		mode='create',
-		port_handle=port_handle[1],
-		l2_encap='ethernet_ii_vlan',
-		l3_protocol='ipv4',
-		ip_id='0',
-		ip_src_addr='192.85.1.2',
-		ip_dst_addr='192.0.0.1',
-		ip_ttl='255',
-		ip_hdr_length='5',
-		ip_protocol='253',
-		ip_fragment_offset='0',
-		ip_mbz='0',
-		ip_precedence='0',
-		ip_tos_field='0',
-		vlan_id_repeat='0',
-		vlan_id_mode='increment',
-		vlan_id_count='4095',
-		vlan_id_step='1',
-		mac_src='00:10:94:00:00:01',
-		mac_dst='00:10:94:00:00:02',
-		vlan_cfi='0',
-		vlan_tpid='33024',
-		vlan_id='1',
-		vlan_user_priority='0',
+		port_handle=port_handle[0],
+		l2_encap='ethernet_ii',
+		mac_src='00:10:94:00:00:02',
+		mac_dst='01:80:C2:00:00:02',
 		enable_control_plane='0',
-		l3_length='4978',
-		name='StreamBlock_12',
-		fill_type='constant',
+		l3_length='537',
+		name='LACP_Stream_/Slow_Protocol',
+		fill_type='prbs',
 		fcs_error='0',
 		fill_value='0',
-		frame_size='1500',
+		frame_size='555',
 		traffic_state='1',
 		high_speed_result_analysis='1',
 		length_mode='fixed',
-		dest_port_list=port_handle[0],
 		tx_port_sending_traffic_to_self_en='false',
 		disable_signature='0',
 		enable_stream_only_gen='1',
 		pkts_per_burst='1',
 		inter_stream_gap_unit='bytes',
-		burst_loop_count='6000',
-		transmit_mode='multi_burst',
+		burst_loop_count='30',
+		transmit_mode='continuous',
 		inter_stream_gap='12',
-		rate_mbps='800',
-		mac_discovery_gw='192.85.1.1',
-		enable_stream='false');
+		rate_pps='9275');
 
 	status = streamblock_ret2['status']
 	if (status == '0'):
@@ -222,6 +224,98 @@ def Spirent_VLAN_Transperancy_Traffic_Testing_For_P2P_Service():
 	else:
 		print("***** run sth.traffic_config successfully")
 
+	streamblock_ret3 = sth.traffic_config(
+		mode='create',
+		port_handle=port_handle[0],
+		l2_encap='ethernet_ii',
+		mac_src='00:10:94:00:00:02',
+		ether_type='888E',
+		mac_dst='01:80:C2:00:00:03',
+		enable_control_plane='0',
+		l3_length='537',
+		name='Port_Authentication',
+		fill_type='constant',
+		fcs_error='0',
+		fill_value='0',
+		frame_size='555',
+		traffic_state='1',
+		high_speed_result_analysis='1',
+		length_mode='fixed',
+		tx_port_sending_traffic_to_self_en='false',
+		disable_signature='0',
+		enable_stream_only_gen='1',
+		pkts_per_burst='1',
+		inter_stream_gap_unit='bytes',
+		burst_loop_count='30',
+		transmit_mode='continuous',
+		inter_stream_gap='12',
+		rate_pps='9164');
+	streamblock_ret19 = sth.traffic_config(
+		mode='create',
+		port_handle=port_handle[1],
+		l2_encap='ethernet_ii',
+		mac_src='00:10:94:00:00:02',
+		mac_dst='01:80:C2:00:00:02',
+		enable_control_plane='0',
+		l3_length='537',
+		name='LACP_Stream_/Slow_Protocol',
+		fill_type='prbs',
+		fcs_error='0',
+		fill_value='0',
+		frame_size='555',
+		traffic_state='1',
+		high_speed_result_analysis='1',
+		length_mode='fixed',
+		tx_port_sending_traffic_to_self_en='false',
+		disable_signature='0',
+		enable_stream_only_gen='1',
+		pkts_per_burst='1',
+		inter_stream_gap_unit='bytes',
+		burst_loop_count='30',
+		transmit_mode='continuous',
+		inter_stream_gap='12',
+		rate_pps='9100');
+
+	status = streamblock_ret19['status']
+	if (status == '0'):
+		print("run sth.traffic_config failed")
+		print(streamblock_ret19)
+	else:
+		print("***** run sth.traffic_config successfully")
+
+	streamblock_ret20 = sth.traffic_config(
+		mode='create',
+		port_handle=port_handle[1],
+		l2_encap='ethernet_ii',
+		mac_src='00:10:94:00:00:02',
+		ether_type='888E',
+		mac_dst='01:80:C2:00:00:03',
+		enable_control_plane='0',
+		l3_length='537',
+		name='Port_Authentication',
+		fill_type='constant',
+		fcs_error='0',
+		fill_value='0',
+		frame_size='555',
+		traffic_state='1',
+		high_speed_result_analysis='1',
+		length_mode='fixed',
+		tx_port_sending_traffic_to_self_en='false',
+		disable_signature='0',
+		enable_stream_only_gen='1',
+		pkts_per_burst='1',
+		inter_stream_gap_unit='bytes',
+		burst_loop_count='30',
+		transmit_mode='continuous',
+		inter_stream_gap='12',
+		rate_pps='9100');
+
+	status = streamblock_ret20['status']
+	if (status == '0'):
+		print("run sth.traffic_config failed")
+		print(streamblock_ret20)
+	else:
+		print("***** run sth.traffic_config successfully")
 	# config part is finished
 	#############################################################
 	# start traffic
@@ -248,6 +342,18 @@ def Spirent_VLAN_Transperancy_Traffic_Testing_For_P2P_Service():
 	# print(traffic_ctrl_ret)
 	print("Test Traffic Stopped now adding delay before collecting stats")
 	time.sleep(70)
+	traffic_ctrl_ret = sth.traffic_control(
+		port_handle=[port_handle[0], port_handle[1]],
+		action='stop')
+	print("***** traffic stopped")
+
+	status = traffic_ctrl_ret['status']
+	if (status == '0'):
+		print("run sth.traffic_control failed")
+		print(traffic_ctrl_ret)
+	else:
+		print("***** run sth.traffic_control successfully")
+
 	print("Traffic collection started")
 	##############################################################
 	# start to get the traffic results
@@ -308,8 +414,7 @@ def Spirent_VLAN_Transperancy_Traffic_Testing_For_P2P_Service():
 	return OverallStatus
 
 def Spirent_MAC_Transperancy_Traffic_Testing_For_P2P_Service():
-	Booked_ports, Interface_config, Stream_config, Spirent_Test_Infra = spirent_items()
-	Number_of_ports = Spirent_Test_Infra['Number_of_ports']
+	Spirent_Test_Infrastructure = Get_Spirent_Config()
 
 	##############################################################
 	# Creation of Spirent Test config with log file
@@ -345,24 +450,25 @@ def Spirent_MAC_Transperancy_Traffic_Testing_For_P2P_Service():
 	# connect to chassis and reserve port list
 	##############################################################
 	i = 0
-	device = "10.91.113.124"
-	port_list = list(Booked_ports.values())
 	port_handle = []
+	device = Spirent_Test_Infrastructure['Spirent_Chassis_ip']
+	port_list = list(Spirent_Test_Infrastructure['Port_Values'].values())
+	port_speed = list(Spirent_Test_Infrastructure['Port_Speed'].values())
+	port_mode = list(Spirent_Test_Infrastructure['Port_Phy_Mode'].values())
 	intStatus = sth.connect(
 		device=device,
 		port_list=port_list,
 		break_locks=1,
 		offline=0)
-
 	status = intStatus['status']
-
 	if (status == '1'):
 		for port in port_list:
 			port_handle.append(intStatus['port_handle'][device][port])
 			i += 1
 	else:
 		print("\nFailed to retrieve port handle!\n")
-	#		print(port_handle)
+	#		print(self.port_handle)
+	print("Printing Port Handle")
 	print(port_handle)
 	##############################################################
 	# Spirent Ports configuration
@@ -382,7 +488,7 @@ def Spirent_MAC_Transperancy_Traffic_Testing_For_P2P_Service():
 			flow_control='false',
 			speed='ether1000',
 			data_path_mode='normal',
-			autonegotiation='1');
+			autonegotiation='0');
 		status = int_ret0['status']
 		if (status == '0'):
 			print("run sth.interface_config failed")
@@ -597,123 +703,265 @@ def Spirent_MAC_Transperancy_Traffic_Testing_For_P2P_Service():
 
 	return OverallStatus
 
+
 def spi2():
-    Booked_ports, Interface_config, Stream_config, Spirent_Test_Infra = spirent_items()
-    test_sta = sth.test_config (
-            log                                              = '1',
-            logfile                                          = 'SteamConfig-WithPercentageTraffic_logfile',
-            vendorlogfile                                    = 'SteamConfig-WithPercentageTraffic_stcExport',
-            vendorlog                                        = '1',
-            hltlog                                           = '1',
-            hltlogfile                                       = 'SteamConfig-WithPercentageTraffic_hltExport',
-            hlt2stcmappingfile                               = 'SteamConfig-WithPercentageTraffic_hlt2StcMapping',
-            hlt2stcmapping                                   = '1',
-            log_level                                        = '7');
-    Number_of_ports = Spirent_Test_Infra['Number_of_ports']
-    status = test_sta['status']
-    if (status == '0') :
-        print("run sth.test_config failed")
-        print(test_sta)
-    ##############################################################
-    #config the parameters for optimization and parsing
-    ##############################################################
+	Spirent_Test_Infrastructure = Get_Spirent_Config()
 
-    test_ctrl_sta = sth.test_control (
-            action                                           = 'enable');
+	##############################################################
+	# Creation of Spirent Test config with log file
+	##############################################################
 
-    status = test_ctrl_sta['status']
-    if (status == '0') :
-        print("run sth.test_control failed")
-        print(test_ctrl_sta)
-    ##############################################################
-    #connect to chassis and reserve port list
-    ##############################################################
-    i = 0
-    device = "10.91.113.124"
-    port_list = list(Booked_ports.values())
-    port_handle = []
-    intStatus = sth.connect (
-            device                                           = device,
-            port_list                                        = port_list,
-            break_locks                                      = 1,
-            offline                                          = 0 )
+	test_sta = sth.test_config(
+		log='1',
+		logfile='SteamConfig-WithPercentageTraffic_logfile',
+		vendorlogfile='SteamConfig-WithPercentageTraffic_stcExport',
+		vendorlog='1',
+		hltlog='1',
+		hltlogfile='SteamConfig-WithPercentageTraffic_hltExport',
+		hlt2stcmappingfile='SteamConfig-WithPercentageTraffic_hlt2StcMapping',
+		hlt2stcmapping='1',
+		log_level='7');
 
-    status = intStatus['status']
+	status = test_sta['status']
+	if (status == '0'):
+		print("run sth.test_config failed")
 
-    if (status == '1') :
-        for port in port_list :
-            port_handle.append(intStatus['port_handle'][device][port])
-            i += 1
-    else :
-        print("\nFailed to retrieve port handle!\n")
-        print(port_handle)
+	##############################################################
+	# config the parameters for optimization and parsing
+	##############################################################
 
+	test_ctrl_sta = sth.test_control(
+		action='enable');
+
+	status = test_ctrl_sta['status']
+	if (status == '0'):
+		print("run sth.test_control failed")
+
+	##############################################################
+	# connect to chassis and reserve port list
+	##############################################################
+	i = 0
+	port_handle = []
+	device = Spirent_Test_Infrastructure['Spirent_Chassis_ip']
+	port_list = list(Spirent_Test_Infrastructure['Port_Values'].values())
+	port_speed = list(Spirent_Test_Infrastructure['Port_Speed'].values())
+	port_mode = list(Spirent_Test_Infrastructure['Port_Phy_Mode'].values())
+	intStatus = sth.connect(
+		device=device,
+		port_list=port_list,
+		break_locks=1,
+		offline=0)
+	status = intStatus['status']
+	if (status == '1'):
+		for port in port_list:
+			port_handle.append(intStatus['port_handle'][device][port])
+			i += 1
+	else:
+		print("\nFailed to retrieve port handle!\n")
+	#		print(self.port_handle)
+	print("Printing Port Handle")
+	print(port_handle)
+	##############################################################
+	# Spirent Ports configuration
+	##############################################################
+	for i in range(len(port_list)):
+		int_ret0 = sth.interface_config(
+			mode='config',
+			port_handle=port_handle[i],
+			create_host='false',
+			intf_mode='ethernet',
+			phy_mode='fiber',
+			scheduling_mode='RATE_BASED',
+			port_loadunit='PERCENT_LINE_RATE',
+			port_load='50',
+			enable_ping_response='0',
+			control_plane_mtu='1500',
+			flow_control='false',
+			speed='ether1000',
+			data_path_mode='normal',
+			autonegotiation='0');
+		status = int_ret0['status']
+		if (status == '0'):
+			print("run sth.interface_config failed")
+	# print(int_ret0)
     ##############################################################
     #interface config
     ##############################################################
-
-    Interface_config['port_handle'] = port_handle[0]
-    int_ret0 = sth.interface_config (**Interface_config)
-    status = int_ret0['status']
-    if (status == '0') :
-        print("run sth.interface_config failed")
-        print(int_ret0)
-    Interface_config['port_handle'] = port_handle[1]
-    int_ret1 = sth.interface_config (**Interface_config)
-    status = int_ret1['status']
-    if (status == '0') :
-        print("run sth.interface_config failed")
-        print(int_ret0)
+	for i in range(len(port_list)):
+		int_ret0 = sth.interface_config(
+		mode='config',
+			port_handle=port_handle[i],
+			create_host='false',
+			intf_mode='ethernet',
+			phy_mode='fiber',
+			scheduling_mode='RATE_BASED',
+			port_loadunit='PERCENT_LINE_RATE',
+			port_load='50',
+			enable_ping_response='0',
+			control_plane_mtu='1500',
+			flow_control='false',
+			speed='ether1000',
+			data_path_mode='normal',
+			autonegotiation='0');
+		status = int_ret0['status']
+		if (status == '0'):
+			print("run sth.interface_config failed")
+	# print(int_ret0)
     ##############################################################
     #stream config
     ##############################################################
-    Stream_config['port_handle'] = port_handle[0]
-    Stream_config['dest_port_list'] = port_handle[1]
-    Stream_config['name'] =  'Stream From 9-3 to 9-4'
-    streamblock_ret1 = sth.traffic_config(**Stream_config)
-    status = streamblock_ret1['status']
-    if (status == '0') :
-        print("run sth.traffic_config failed")
-        print(streamblock_ret1)
-    Stream_config['port_handle'] = port_handle[1]
-    Stream_config['dest_port_list'] = port_handle[0]
-    Stream_config['name'] =  'Stream From 9-4 to 9-3'
-    streamblock_ret1 = sth.traffic_config(**Stream_config)
-    status = streamblock_ret1['status']
-    if (status == '0') :
-        print("run sth.traffic_config failed")
-        print(streamblock_ret1)
+	streamblock_ret1 = sth.traffic_config(
+		mode='create',
+		port_handle=port_handle[0],
+		l2_encap='ethernet_ii_vlan',
+		l3_protocol='ipv4',
+		ip_id='0',
+		ip_src_addr='192.85.1.2',
+		ip_dst_addr='192.0.0.1',
+		ip_ttl='255',
+		ip_hdr_length='5',
+		ip_protocol='253',
+		ip_fragment_offset='0',
+		ip_mbz='0',
+		ip_precedence='0',
+		ip_tos_field='0',
+		vlan_id_repeat='0',
+		vlan_id_mode='increment',
+		vlan_id_count='4095',
+		vlan_id_step='1',
+		mac_dst_mode='random',
+		mac_dst_repeat_count='0',
+		mac_dst_count='1',
+		mac_src_count='1',
+		mac_src_mode='random',
+		mac_src_repeat_count='0',
+		mac_src='00:10:94:00:00:02',
+		mac_dst='00:00:01:00:00:01',
+		vlan_cfi='0',
+		vlan_tpid='33024',
+		vlan_id='1',
+		vlan_user_priority='0',
+		enable_control_plane='0',
+		l3_length='4978',
+		name='StreamBlock_11',
+		fill_type='constant',
+		fcs_error='0',
+		fill_value='0',
+		frame_size='1500',
+		traffic_state='1',
+		high_speed_result_analysis='1',
+		length_mode='fixed',
+		dest_port_list=port_handle[1],
+		tx_port_sending_traffic_to_self_en='false',
+		disable_signature='0',
+		enable_stream_only_gen='1',
+		pkts_per_burst='1',
+		inter_stream_gap_unit='bytes',
+		burst_loop_count='6000',
+		transmit_mode='multi_burst',
+		inter_stream_gap='12',
+		rate_mbps='800',
+		mac_discovery_gw='192.85.1.1',
+		enable_stream='false');
+
+	status = streamblock_ret1['status']
+	if (status == '0'):
+		print("run sth.traffic_config failed")
+		print(streamblock_ret1)
+	else:
+		print("***** run sth.traffic_config successfully")
+
+	streamblock_ret2 = sth.traffic_config(
+		mode='create',
+		port_handle=port_handle[1],
+		l2_encap='ethernet_ii_vlan',
+		l3_protocol='ipv4',
+		ip_id='0',
+		ip_src_addr='192.85.1.2',
+		ip_dst_addr='192.0.0.1',
+		ip_ttl='255',
+		ip_hdr_length='5',
+		ip_protocol='253',
+		ip_fragment_offset='0',
+		ip_mbz='0',
+		ip_precedence='0',
+		ip_tos_field='0',
+		vlan_id_repeat='0',
+		vlan_id_mode='increment',
+		vlan_id_count='4095',
+		vlan_id_step='1',
+		mac_dst_mode='random',
+		mac_dst_repeat_count='0',
+		mac_dst_count='1',
+		mac_src_count='1',
+		mac_src_mode='random',
+		mac_src_repeat_count='0',
+		mac_src='00:10:94:00:00:02',
+		mac_dst='00:00:01:00:00:01',
+		vlan_cfi='0',
+		vlan_tpid='33024',
+		vlan_id='1',
+		vlan_user_priority='0',
+		enable_control_plane='0',
+		l3_length='4978',
+		name='StreamBlock_12',
+		fill_type='constant',
+		fcs_error='0',
+		fill_value='0',
+		frame_size='1500',
+		traffic_state='1',
+		high_speed_result_analysis='1',
+		length_mode='fixed',
+		dest_port_list=port_handle[0],
+		tx_port_sending_traffic_to_self_en='false',
+		disable_signature='0',
+		enable_stream_only_gen='1',
+		pkts_per_burst='1',
+		inter_stream_gap_unit='bytes',
+		burst_loop_count='6000',
+		transmit_mode='multi_burst',
+		inter_stream_gap='12',
+		rate_mbps='800',
+		mac_discovery_gw='192.85.1.1',
+		enable_stream='false');
+
+	status = streamblock_ret2['status']
+	if (status == '0'):
+		print("run sth.traffic_config failed")
+		print(streamblock_ret2)
+	else:
+		print("***** run sth.traffic_config successfully")
+
+	# config part is finished
     #############################################################
     #start traffic
     ##############################################################
-    print("Traffic Started")
-    traffic_ctrl_ret = sth.traffic_control (
+	print("Traffic Started")
+	traffic_ctrl_ret = sth.traffic_control (
             port_handle                                      = [port_handle[0],port_handle[1]],
             action                                           = 'run',
             duration                                         = '30');
 
-    status = traffic_ctrl_ret['status']
-    if (status == '0') :
-        print("run sth.traffic_control failed")
-        print(traffic_ctrl_ret)
-    print("Test Traffic Stopped now adding delay before collecting stats")
-    time.sleep(10)
-    print("Traffic collection started")
-    ##############################################################
-    #start to get the traffic results
-    ##############################################################
-    traffic_results_ret = sth.traffic_stats (
+	status = traffic_ctrl_ret['status']
+	if (status == '0') :
+		print("run sth.traffic_control failed")
+		print(traffic_ctrl_ret)
+	print("Test Traffic Stopped now adding delay before collecting stats")
+	time.sleep(10)
+	print("Traffic collection started")
+	##############################################################
+	#start to get the traffic results
+	##############################################################
+	traffic_results_ret = sth.traffic_stats (
             port_handle                                      = [port_handle[0],port_handle[1]],
             mode                                             = 'all');
 
-    status = traffic_results_ret['status']
-    if (status == '0') :
-        print("run sth.traffic_stats failed")
-        print(traffic_results_ret)
-
-
-    result = SpirentResult(traffic_results_ret, port_list)
-    return result
+	status = traffic_results_ret['status']
+	if (status == '0') :
+		print("run sth.traffic_stats failed")
+		print(traffic_results_ret)
+	result = SpirentResult(traffic_results_ret, port_list)
+	return result
 
 
 def L2_Traffic():
@@ -892,16 +1140,9 @@ def L2_Traffic():
     #create traffic
     ##############################################################
 
-    src_hdl = device_ret1['handle'].split()[0]
-
-    dst_hdl = device_ret0['handle'].split()[0]
-
-
     streamblock_ret1 = sth.traffic_config (
             mode                                             = 'create',
             port_handle                                      = port_handle[0],
-            emulation_src_handle                             = src_hdl,
-            emulation_dst_handle                             = dst_hdl,
             l3_protocol                                      = 'ipv4',
             ip_id                                            = '0',
             ip_ttl                                           = '255',
@@ -1100,30 +1341,26 @@ def SpirentResult(traffic_results_ret, port_list):
     return OverallStatus
 
 def Spirent_L2CP_Transperancy_Traffic_Testing_For_P2P_Service():
-	Booked_ports, Interface_config, Stream_config, Spirent_Test_Infra = spirent_items()
-	Number_of_ports = Spirent_Test_Infra['Number_of_ports']
+	Spirent_Test_Infrastructure = Get_Spirent_Config()
 
 	##############################################################
-	# config the parameters for the logging
+	# Creation of Spirent Test config with log file
 	##############################################################
 
 	test_sta = sth.test_config(
-		log='0',
-		logfile='l2cp_logfile',
-		vendorlogfile='l2cp_stcExport',
-		vendorlog='0',
+		log='1',
+		logfile='SteamConfig-WithPercentageTraffic_logfile',
+		vendorlogfile='SteamConfig-WithPercentageTraffic_stcExport',
+		vendorlog='1',
 		hltlog='1',
-		hltlogfile='l2cp_hltExport',
-		hlt2stcmappingfile='l2cp_hlt2StcMapping',
+		hltlogfile='SteamConfig-WithPercentageTraffic_hltExport',
+		hlt2stcmappingfile='SteamConfig-WithPercentageTraffic_hlt2StcMapping',
 		hlt2stcmapping='1',
-		log_level='0');
+		log_level='7');
 
 	status = test_sta['status']
 	if (status == '0'):
 		print("run sth.test_config failed")
-		print(test_sta)
-	else:
-		print("***** run sth.test_config successfully")
 
 	##############################################################
 	# config the parameters for optimization and parsing
@@ -1135,26 +1372,21 @@ def Spirent_L2CP_Transperancy_Traffic_Testing_For_P2P_Service():
 	status = test_ctrl_sta['status']
 	if (status == '0'):
 		print("run sth.test_control failed")
-		print(test_ctrl_sta)
-	else:
-		print("***** run sth.test_control successfully")
 
 	##############################################################
 	# connect to chassis and reserve port list
 	##############################################################
-	##############################################################
-	# connect to chassis and reserve port list
-	##############################################################
 	i = 0
-	device = "10.91.113.124"
-	port_list = list(Booked_ports.values())
 	port_handle = []
+	device = Spirent_Test_Infrastructure['Spirent_Chassis_ip']
+	port_list = list(Spirent_Test_Infrastructure['Port_Values'].values())
+	port_speed = list(Spirent_Test_Infrastructure['Port_Speed'].values())
+	port_mode = list(Spirent_Test_Infrastructure['Port_Phy_Mode'].values())
 	intStatus = sth.connect(
 		device=device,
 		port_list=port_list,
 		break_locks=1,
 		offline=0)
-
 	status = intStatus['status']
 	if (status == '1'):
 		for port in port_list:
@@ -1162,57 +1394,32 @@ def Spirent_L2CP_Transperancy_Traffic_Testing_For_P2P_Service():
 			i += 1
 	else:
 		print("\nFailed to retrieve port handle!\n")
-	#		print(port_handle)
+	#		print(self.port_handle)
+	print("Printing Port Handle")
 	print(port_handle)
-
 	##############################################################
-	# interface config
+	# Spirent Ports configuration
 	##############################################################
-
-	int_ret0 = sth.interface_config(
-		mode='config',
-		port_handle=port_handle[0],
-		create_host='false',
-		intf_mode='ethernet',
-		phy_mode='copper',
-		scheduling_mode='PRIORITY_BASED',
-		port_loadunit='PERCENT_LINE_RATE',
-		port_load='10',
-		enable_ping_response='0',
-		control_plane_mtu='1500',
-		speed='ether1000',
-		duplex='full',
-		autonegotiation='1');
-
-	status = int_ret0['status']
-	if (status == '0'):
-		print("run sth.interface_config failed")
-		print(int_ret0)
-	else:
-		print("***** run sth.interface_config successfully")
-
-	int_ret1 = sth.interface_config(
-		mode='config',
-		port_handle=port_handle[1],
-		create_host='false',
-		intf_mode='ethernet',
-		phy_mode='copper',
-		scheduling_mode='PRIORITY_BASED',
-		port_loadunit='PERCENT_LINE_RATE',
-		port_load='10',
-		enable_ping_response='0',
-		control_plane_mtu='1500',
-		speed='ether1000',
-		duplex='full',
-		autonegotiation='1');
-
-	status = int_ret1['status']
-	if (status == '0'):
-		print("run sth.interface_config failed")
-		print(int_ret1)
-	else:
-		print("***** run sth.interface_config successfully")
-
+	for i in range(len(port_list)):
+		int_ret0 = sth.interface_config(
+			mode='config',
+			port_handle=port_handle[i],
+			create_host='false',
+			intf_mode='ethernet',
+			phy_mode='fiber',
+			scheduling_mode='RATE_BASED',
+			port_loadunit='PERCENT_LINE_RATE',
+			port_load='50',
+			enable_ping_response='0',
+			control_plane_mtu='1500',
+			flow_control='false',
+			speed='ether1000',
+			data_path_mode='normal',
+			autonegotiation='0');
+		status = int_ret0['status']
+		if (status == '0'):
+			print("run sth.interface_config failed")
+	# print(int_ret0)
 	##############################################################
 	# create device and config the protocol on it
 	##############################################################
@@ -2447,5 +2654,3 @@ def Spirent_L2CP_Transperancy_Traffic_Testing_For_P2P_Service():
 	print(OverallStatus)
 
 	return OverallStatus
-
-
